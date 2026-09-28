@@ -1,0 +1,41 @@
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:18.6.4-ce.0
+    container_name: gitlab
+    restart: always
+    hostname: ${GITLAB_HOSTNAME:?Set GITLAB_HOSTNAME}
+    shm_size: 256m
+    ports:
+      - '443:443'
+    volumes:
+      - /srv/gitlab/config:/etc/gitlab
+      - /srv/gitlab/logs:/var/log/gitlab
+      - /srv/gitlab/data:/var/opt/gitlab
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://${GITLAB_HOSTNAME:?Set GITLAB_HOSTNAME}'
+        letsencrypt['enable'] = false
+        nginx['ssl_certificate'] = '/etc/gitlab/ssl/${GITLAB_HOSTNAME:?Set GITLAB_HOSTNAME}.crt'
+        nginx['ssl_certificate_key'] = '/etc/gitlab/ssl/${GITLAB_HOSTNAME:?Set GITLAB_HOSTNAME}.key'
+        puma['worker_processes'] = 0
+        sidekiq['concurrency'] = 10
+        prometheus_monitoring['enable'] = false
+        prometheus['enable'] = false
+        alertmanager['enable'] = false
+        gitlab_exporter['enable'] = false
+        node_exporter['enable'] = false
+        postgres_exporter['enable'] = false
+        redis_exporter['enable'] = false
+        puma['exporter_enabled'] = false
+        gitlab_kas['enable'] = false
+        registry['enable'] = false
+  node-exporter:
+    image: prom/node-exporter:v1.9.1
+    restart: always
+    command:
+      - --path.rootfs=/host
+      - --web.listen-address=10.0.1.10:9100
+    network_mode: host
+    pid: host
+    volumes:
+      - /:/host:ro,rslave

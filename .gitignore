@@ -1,0 +1,35 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.tfvars
+*.tfvars.json
+certs/
+vpnclient/
+vpnclient.zip
+*.ovpn
+*.p12
+*.pfx
+openvpn.log
+
+# Terraform working files and state
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+
+# Keep provider selections reproducible
+!.terraform.lock.hcl
+# Runtime secrets and locally generated service data
+**/config.toml
+**/grafana-admin-password
+**/*_gitlab_backup.tar
+**/*_gitlab_config.tar.gz
+**/grafana-*.db
+.env*
+docs/
+.vpn*
+AGENTS*
+

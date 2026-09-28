@@ -1,0 +1,10 @@
+[[runners]]
+  limit = 1
+  [runners.docker]
+    image = "alpine:3.21"
+    privileged = false
+    services_privileged = false
+    cpus = "1"
+    memory = "2g"
+    memory_swap = "2g"
+    volumes = ["/cache"]

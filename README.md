@@ -1,70 +1,58 @@
-# Private GitLab Platform on Azure
+# cloudSphere: Private GitLab on Azure
 
-A self-hosted GitLab platform deployed on Microsoft Azure for private source control, CI/CD, infrastructure management, and monitoring.
+A bootcamp reference implementation of a private GitLab platform using Terraform and Docker Compose. Two Azure VMs share a four-vCPU budget: one hosts GitLab CE; the other hosts monitoring and a single project Runner.
 
-The platform provides development teams with a private environment for hosting repositories, reviewing code, running automated pipelines, and monitoring the infrastructure supporting the service.
+The repository contains reusable configuration and operating instructions. Deployment credentials, live resource identifiers, screenshots, and private verification records are excluded. Run the acceptance checks for your own installation; publishing these files does not deploy or validate a platform.
 
-## What It Provides
+```mermaid
+flowchart LR
+    User[Developer / administrator] -->|Encrypted P2S tunnel| VPN[Azure VPN gateway]
+    subgraph Workloads[Private workload subnets — no VM public IPs]
+        G[GitLab VM<br/>1 NIC · 2 vCPU · 8 GiB]
+        M[Monitoring + Runner VM<br/>1 NIC · 2 vCPU · 8 GiB]
+    end
+    VPN -->|HTTPS 443 / SSH 22| G
+    VPN -->|Grafana 3000 / SSH 22| M
+    M -->|Runner HTTPS / host metrics| G
+    G -->|Daily backup| B[Azure Blob LRS<br/>Private container]
+    M -->|Daily Grafana backup| B
+```
 
-- **Private Git repositories** using GitLab CE
-- **Merge Requests** for code review and collaboration
-- **CI/CD pipelines** executed by a self-hosted GitLab Runner
-- **Infrastructure monitoring** with Prometheus
-- **Dashboards and metrics** through Grafana
-- **Secure remote access** through an Azure VPN
-- **Automated infrastructure provisioning** with Terraform
-- **Persistent storage and backups** for application data
+## Read the design
 
-## How It Is Used
+- [Solution architecture and ADRs](docs/SOLUTION_ARCHITECTURE.md): topology, NICs, network boundaries, storage, tradeoffs, and recovery.
+- [Deployment runbook](docs/DEPLOYMENT_PLAN.md): preparation, installation order, and acceptance checks.
+- [VPN access](docs/VPN.md): certificate access and optional Entra authentication.
+- [Recovery runbook](docs/runbooks/RESTORE.md): complete GitLab restore and Grafana recovery.
+- [Publishing guide](docs/PUBLISHING.md): public file boundary and release checks.
 
-Users first connect to the Azure VPN to access the private environment.
+## What is included
 
-Once connected, developers can use GitLab normally:
+| Path | Purpose |
+| --- | --- |
+| `terraform/` | VNet, VPN gateway, two NICs, two VMs, NSGs, disks, Blob storage, and backup identities |
+| `deploy/gitlab/` | GitLab CE and host Node Exporter |
+| `deploy/monitoring/` | Prometheus, Grafana, host Node Exporter, and project Runner |
+| `scripts/` | Host tools, safe disk preparation, GitLab and Grafana backups |
+| `deploy/runner-smoke.gitlab-ci.yml` | A real CI job that checks execution limits and produces an artifact |
 
-1. Create or join a GitLab project.
-2. Clone the repository over HTTPS.
-3. Create a branch and make changes.
-4. Push the branch to GitLab.
-5. Open a Merge Request for review.
-6. GitLab automatically starts the configured CI/CD pipeline.
-7. The GitLab Runner executes the pipeline jobs.
-8. Approved changes can then be merged and deployed.
+## Prepare your configuration
 
-Infrastructure health and resource metrics can be viewed through Grafana.
+You need an Azure subscription, Azure CLI authentication, Terraform compatible with the locked provider, an SSH key, VPN certificates, and a hostname with trusted TLS. Host installation expects Ubuntu 22.04, Docker Engine, and the Compose plugin. Commands assume Bash and the default example administrator `azureadmin`; adapt it if you change that variable.
 
-## Architecture
+```bash
+cp terraform/terraform.tfvars.example terraform/terraform.tfvars
+cp deploy/gitlab/.env.example deploy/gitlab/.env
+```
 
-The platform is divided into two main workloads:
+Replace the example values, then follow the deployment runbook. The addresses `10.0.0.0/16` and `172.16.100.0/24` are the reference network layout. Change them consistently across Terraform, Compose, Prometheus, and your client routes if they overlap an existing network. `gitlab.internal.example.com` is a placeholder, not a service operated by this project.
 
-**GitLab**
-- GitLab Community Edition
-- Repository and project management
-- Merge Requests
-- CI/CD coordination
-- Node Exporter
+## Scope and limitations
 
-**Monitoring & CI**
-- GitLab Runner
-- Prometheus
-- Grafana
-- Node Exporter
+This is a small, single-region installation without high availability. Each VM has two vCPUs and 8 GiB RAM, with separate 128-GiB GitLab and 64-GiB monitoring data disks. CI is limited to one trusted project and one job at a time. The Runner controller uses the host Docker socket; it is unsuitable for untrusted public contributions.
 
-Both workloads run on Azure virtual machines inside a private Azure network and are accessed through VPN rather than public VM endpoints.
+GitLab and Grafana are reached through the VPN. The VPN gateway has a public endpoint, and Blob uploads use the authenticated public Azure Storage endpoint. No explicit outbound route is provisioned; verify egress before package downloads, image pulls, or backups. Same-region LRS backups do not cover a whole-region outage. Image versions are pinned for reproducibility; review upstream support and security releases before deploying or upgrading them.
 
-## Technology Stack
+## License
 
-- Microsoft Azure
-- Terraform
-- Linux
-- Docker & Docker Compose
-- GitLab CE
-- GitLab Runner
-- Prometheus
-- Grafana
-- Azure VPN
-
-## Project Status
-
-The platform has been deployed and validated.
-
-Core functionality including GitLab access, Git operations, CI/CD execution, monitoring, persistent storage, backups, and recovery has been tested successfully.# cloudSphere
+[MIT](LICENSE). GitLab, Grafana, and the other deployed products retain their own licenses.

@@ -7,7 +7,6 @@ variable "location" {
 variable "subscription_id" {
   description = "The Azure subscription ID to deploy resources in."
   type        = string
-  default     = "id"
 }
 variable "resource_group_name" {
   description = "The name of the resource group to create."
@@ -46,12 +45,6 @@ variable "gitlab_vm_size" {
   default     = "Standard_D2as_v7"
 }
 
-variable "runner_vm_size" {
-  description = "Azure VM size for GitLab Runner"
-  type        = string
-  default     = "Standard_D2as_v7"
-}
-
 variable "monitoring_vm_size" {
   description = "Azure VM size for the monitoring stack"
   type        = string
@@ -60,6 +53,11 @@ variable "monitoring_vm_size" {
 
 # VPN variables
 
+variable "vpn_root_certificate_path" {
+  description = "Path relative to this Terraform module to the local PEM VPN root certificate. Never commit certificate material."
+  type        = string
+  default     = "../certs/vpn-root.crt"
+}
 
 variable "vpn_client_address_space" {
   description = "The address pool for the VPN client."

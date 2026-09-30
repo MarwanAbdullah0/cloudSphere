@@ -1,0 +1,12 @@
+
+subscription_id             = "00000000-0000-0000-0000-000000000000"
+location                    = "eastus"
+resource_group_name         = "gitlab-rg"
+backup_storage_account_name = "replacewithuniquename"
+admin_username              = "azureadmin"
+ssh_public_key_path         = "~/.ssh/id_ed25519.pub"
+vpn_root_certificate_path   = "../certs/vpn-root.crt"
+
+
+# vpn_entra_audience = "YOUR_CUSTOM_APP_CLIENT_ID"
+# entra_tenant_id    = "YOUR_TENANT_ID"

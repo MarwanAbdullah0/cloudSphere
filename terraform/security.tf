@@ -1,5 +1,5 @@
 
-# NSG's
+# Network security groups
 
 resource "azurerm_network_security_group" "gitlab_nsg" {
   name                = "gitlab-nsg"
@@ -54,8 +54,6 @@ resource "azurerm_network_security_rule" "gitlab_allow_vpn_ssh" {
 
 
 # Runner -> GitLab HTTPS
-#
-# Runner now lives inside the monitoring subnet.
 resource "azurerm_network_security_rule" "gitlab_allow_runner_https" {
   name      = "allow-runner-https"
   priority  = 120
@@ -112,9 +110,7 @@ resource "azurerm_network_security_rule" "gitlab_deny_vnet" {
 }
 
 
-# ==========================================================
-# Runner + Monitoring NSG
-# ==========================================================
+# Monitoring and Runner subnet rules
 
 # VPN admins -> VM SSH
 resource "azurerm_network_security_rule" "monitoring_allow_vpn_ssh" {

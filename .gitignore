@@ -4,32 +4,57 @@
 !.env.example
 *.tfvars
 *.tfvars.json
+!terraform.tfvars.example
 certs/
 vpnclient/
 vpnclient.zip
 *.ovpn
+*.pem
+*.key
+*.crt
+*.cer
 *.p12
 *.pfx
+*.p7b
+*.p7c
+*.jks
+*.keystore
 openvpn.log
 
-# Terraform working files and state
+# Terraform working files, plans, and state
 .terraform/
 *.tfstate
 *.tfstate.*
 *.tfplan
+tfplan
 crash.log
 crash.*.log
-
-# Keep provider selections reproducible
 !.terraform.lock.hcl
-# Runtime secrets and locally generated service data
+
+# Runtime state and backup material
 **/config.toml
 **/grafana-admin-password
-**/*_gitlab_backup.tar
-**/*_gitlab_config.tar.gz
-**/grafana-*.db
-.env*
-docs/
+**/gitlab-secrets.json
+*.db
+*.db-wal
+*.db-shm
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.log
+
+# Publish only reviewed documentation. Operator records and images stay local.
+/docs/*
+!/docs/SOLUTION_ARCHITECTURE.md
+!/docs/DEPLOYMENT_PLAN.md
+!/docs/VPN.md
+!/docs/PUBLISHING.md
+!/docs/runbooks/
+/docs/runbooks/*
+!/docs/runbooks/RESTORE.md
 .vpn*
 AGENTS*
-
+.agents/
+.codex/
+.aws/

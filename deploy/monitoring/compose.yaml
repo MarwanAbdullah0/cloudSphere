@@ -1,0 +1,58 @@
+x-service-logging: &service-logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    restart: always
+    logging: *service-logging
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=7d
+    ports:
+      - '127.0.0.1:9090:9090'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - /srv/monitoring/prometheus:/prometheus
+  grafana:
+    image: grafana/grafana:12.1.0
+    restart: always
+    logging: *service-logging
+    ports:
+      - '3000:3000'
+    volumes:
+      - /srv/monitoring/grafana:/var/lib/grafana
+      - ./grafana-provisioning:/etc/grafana/provisioning:ro
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_admin_password
+    secrets:
+      - grafana_admin_password
+  node-exporter:
+    image: prom/node-exporter:v1.9.1
+    restart: always
+    logging: *service-logging
+    command:
+      - --path.rootfs=/host
+      - --web.listen-address=10.0.3.10:9100
+    network_mode: host
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+  runner:
+    image: gitlab/gitlab-runner:alpine-v18.6.0
+    restart: always
+    logging: *service-logging
+    cpus: '0.5'
+    mem_limit: 512m
+    volumes:
+      - ./runner-template.toml:/registration-template.toml:ro
+      - /srv/monitoring/runner:/etc/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock
+secrets:
+  grafana_admin_password:
+    file: /srv/monitoring/secrets/grafana-admin-password

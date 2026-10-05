@@ -1,0 +1,17 @@
+runner-check:
+  image: alpine:3.21
+  tags:
+    - bootcamp
+  script:
+    - test -d .git
+    - test -s README.md
+    - test -n "$CI_COMMIT_SHA"
+    - test ! -S /var/run/docker.sock
+    - test "$(cat /sys/fs/cgroup/memory.max)" -eq 2147483648
+    - read quota period < /sys/fs/cgroup/cpu.max; test "$quota" -eq "$period"
+    - cap=$(awk '/^CapEff:/ {print $2}' /proc/self/status); test $((0x$cap & 0x200000)) -eq 0
+    - printf 'runner-ok %s\n' "$CI_COMMIT_SHA" > runner-check.txt
+    - cat runner-check.txt
+  artifacts:
+    paths:
+      - runner-check.txt

@@ -25,6 +25,22 @@ Connect with Azure VPN Client, sign in with your assigned Microsoft Entra ID acc
 - Daily GitLab and Grafana backups to Azure Blob, using managed identities instead of stored upload credentials.
 - Terraform infrastructure, Docker Compose services, and documented manual recovery.
 
+
+## Technology stack
+
+| Area | Technology |
+| --- | --- |
+| Cloud | Microsoft Azure |
+| Infrastructure as Code | Terraform |
+| Source Control & CI/CD | GitLab CE, GitLab Runner |
+| Containers | Docker, Docker Compose |
+| Monitoring | Prometheus, Grafana, Node Exporter |
+| Operating System | Ubuntu Linux |
+| Networking | Azure VNet, NSG, VPN |
+| Backup | Azure Blob Storage |
+| Identity | Microsoft Entra ID |
+
+
 ## How it connects
 
 ```mermaid
